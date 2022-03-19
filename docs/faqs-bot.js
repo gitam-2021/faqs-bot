@@ -39,33 +39,24 @@ var unixCommandsShow = function () {}
 var cheatSheetsShow = function () {}
 
 var askQuestions = function () {
-  botui.message
-    .bot({
-      delay: 500,
-      content: 'What\'s your qeustion?'
-    })
-    .then(function() {
-      return botui.action.text({
-        dela  : 1000,
-        action: {
-          size: 120,
-          value: '', // default placeholder
-          sub_type: 'string',
-          placeholder: 'What is ...'
-        }
-      }).then(function (res) {
-        loadingMsgIndex = botui.message.bot({
-          delay: 200,
-          loading: true
-        }).then(function (index) {
-          loadingMsgIndex = index;
-          sendXHR(res.value, showMatches)
-        });
-      });
+  return botui.action.text({
+    dela  : 1000,
+    action: {
+      size: 120,
+      value: '', // default placeholder
+      sub_type: 'string',
+      placeholder: 'What is ...'
+    }
+  }).then(function (res) {
+    loadingMsgIndex = botui.message.bot({
+      delay: 200,
+      loading: true
+    }).then(function (index) {
+      loadingMsgIndex = index;
+      sendXHR(res.value, showMatches)
     });
+  });
 }
-
-
 
 function sendXHR(keyword, cb) {
   var xhr = new XMLHttpRequest();
@@ -80,17 +71,26 @@ function sendXHR(keyword, cb) {
 
 // TODO: add the json as just url part of HTML or JS to load along with this file.
 function showMatches(details) {
-  botui.message
-  .update(loadingMsgIndex, {
-    content: details.short_content
-  });
+  if (details == undefined) {
+    botui.message
+    .update(loadingMsgIndex, {
+      content: "I am not able to understand. Can you rephrase your question?"
+    })
+    .then(askQuestions);
 
-  botui.message
-  .bot({
-    delay: 500,
-    content: details.more_content
-  })
-  .then(askQuestions);
+  } else {
+    botui.message
+    .update(loadingMsgIndex, {
+      content: details.short_content
+    });
+
+    botui.message
+    .bot({
+      delay: 500,
+      content: details.more_content
+    })
+    .then(askQuestions);
+  }
 }
 
 init();
